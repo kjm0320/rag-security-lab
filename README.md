@@ -406,6 +406,9 @@ python -m unittest discover -s tests -v
 | test_output_guard.py | 6 | 비밀값 가림, 정상 응답 보존, 중복·겹침 처리 및 탐지 한계 |
 | test_disclosure_demo.py | 3 | 동일 응답의 필터 전후 비교와 정상 정보 유지 |
 | test_rag_output.py | 2 | 일반 RAG CLI의 비밀값 가림과 정상 답변 출력 |
+| test_html_report.py | 3 | HTML 공격 문자열의 태그 생성 방지와 원본 텍스트 보존 |
+| test_prompt_leakage.py | 6 | 내부 표식 분리, 비교 조건 유지, 노출 판정과 오염된 문서 거부 |
+| test_summary_report.py | 7 | 파일 누락·오류 구분, 미완료 상태 보존, 수집 결과와 보안 판정 분리 |
 
 RAG 자동 테스트는 답변 생성 함수를 가짜 응답으로 대체하고,
 실제 SDK 클라이언트 생성도 차단합니다.
@@ -512,3 +515,78 @@ docs/는 문서를 추가하기 전까지 복제한 저장소에 없을 수 있�
 
 - [간접 프롬프트 인젝션 비교](docs/injection-comparison-summary.md)
 - [합성 비밀값 출력 필터 실험](docs/disclosure-experiment-01.md)
+
+## 통합 실험 보고서
+
+기존 JSON 보고서 6개를 읽어 통합 JSON과 HTML을 생성합니다.
+이 작업은 LLM API를 호출하지 않습니다.
+
+```bat
+python -m rag_security_lab.summary_report
+start "" "reports\summary.html"
+```
+
+생성 파일:
+
+- reports/summary.json
+- reports/summary.html
+
+동일한 경로로 다시 실행하면 기존 통합 보고서를 덮어씁니다.
+
+### 수집 상태
+
+| 상태 | 의미 |
+|---|---|
+| loaded | 필요한 항목을 읽고 결과를 통합함 |
+| missing | 원본 보고서 파일이 없음 |
+| unreadable | JSON 파싱, 실험 범위 확인 또는 필요한 항목 읽기에 실패함 |
+
+loaded는 보안 테스트 통과를 뜻하지 않습니다.
+미완료 실험과 API 오류도 읽을 수 있으면 loaded로 표시되며,
+내부의 실행 상태는 그대로 유지합니다.
+
+이 기능은 기존 판정을 모으는 기능입니다.
+모델 응답을 재평가하거나 보고서의 진실성,
+모든 데이터 형식과 수치의 일관성을 검증하지는 않습니다.
+
+### 점수와 위험도
+
+현재는 종합 보안 점수를 산출하지 않습니다.
+
+- security_score: null
+- overall_risk: not_assessed
+
+소규모 실험 결과를 전체 시스템의 안전성 점수로 일반화하지 않습니다.
+중복 실행 가능성이 있어 파일들을 합친 공격 성공률도 계산하지 않습니다.
+
+### 새로 복제한 저장소에서의 동작
+
+reports/의 생성 결과는 Git 추적에서 제외됩니다.
+따라서 새로 복제한 저장소에서는 보고서가 missing으로 표시될 수 있습니다.
+
+검색 비교 보고서는 API 없이 생성할 수 있습니다.
+
+```bat
+python -m rag_security_lab.evaluate
+```
+
+실제 LLM 실험 보고서를 생성하려면 API 키와 사용 가능한 할당량이 필요합니다.
+기록된 관찰 결과는 docs/의 실험 문서에서 확인할 수 있습니다.
+
+### HTML 표시
+
+통합 HTML은 데이터를 이스케이프해 텍스트로 표시합니다.
+이 처리는 민감정보 제거 기능이 아닙니다.
+보고서를 공유하기 전 내용을 확인해야 합니다.
+
+## 실험 기록
+
+| 영역 | 기록 |
+|---|---|
+| 간접 프롬프트 인젝션 | [세 공격 유형 비교](docs/injection-comparison-summary.md) |
+| 합성 비밀값 출력 필터 | [동일 응답의 필터 적용 전후](docs/disclosure-experiment-01.md) |
+| HTML 출력 처리 | [이스케이프 및 텍스트 보존 검증](docs/output-handling-01.md) |
+| 시스템 프롬프트 유출 | [합성 내부 표식 노출 실험](docs/prompt-leakage-01.md) |
+
+각 문서에는 실험 조건, 관찰 결과 및 한계를 기록합니다.
+모든 영역에서 동일한 수준의 실제 공격 평가를 완료한 것은 아닙니다.
