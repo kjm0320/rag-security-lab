@@ -1,4 +1,5 @@
 \# RAG Security Lab
+[![Security Tests](https://github.com/kjm0320/rag-security-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/kjm0320/rag-security-lab/actions/workflows/tests.yml)
 
 
 
@@ -209,7 +210,7 @@ reports/의 실행 결과는 기본적으로 Git 추적에서 제외하고,
 
 \- \[ ] 방어 전후 비교 보고서 구현
 
-\- \[ ] GitHub Actions 자동 테스트 연결
+\- \[x] GitHub Actions 자동 테스트 연결
 
 
 
