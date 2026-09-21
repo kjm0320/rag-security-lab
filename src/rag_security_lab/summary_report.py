@@ -39,11 +39,34 @@ SOURCES = [
         "prompt_leakage_demo.json",
         "synthetic_system_prompt_leakage",
     ),
+    (
+        "검색 품질 — 초기 탐색",
+        "search_quality_threshold_0.json",
+        "exploratory_search_quality",
+    ),
+    (
+        "검색 품질 — 별도 검증",
+        "search_validation_threshold_03.json",
+        "exploratory_search_quality",
+    ),
 ]
 
 
 def extract_observations(data: dict) -> dict:
     scope = data["scope"]
+    if scope == "exploratory_search_quality":
+        return {
+            "embedding_model": data["embedding_model"],
+            "settings": data["settings"],
+            "document_fingerprints": data["document_fingerprints"],
+            "methods": {
+                method: {
+                    "summary": data["methods"][method]["summary"],
+                    "cases": data["methods"][method]["results"],
+                }
+                for method in ("keyword", "vector")
+            },
+        }
 
     if scope == "retrieval_access_control":
         return {

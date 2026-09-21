@@ -24,7 +24,7 @@ Gemini 기반 답변 생성, 합성 비밀값 출력 필터,
 - 검색 품질과 출력 필터 적용 전후 비교
 - HTML 이스케이프를 적용한 보고서 생성
 - 기존 실험 결과 통합
-- 실제 LLM 호출 없는 자동 테스트 76개
+- 실제 LLM 호출 없는 자동 테스트 79개
 - GitHub Actions 자동 테스트
 
 ## 구현 범위
@@ -353,8 +353,7 @@ start "" "reports\summary.html"
 - reports/summary.json
 - reports/summary.html
 
-통합기는 지정된 기존 실험 보고서 6개를 읽습니다.
-검색 품질 보고서는 아직 통합 대상에 포함하지 않습니다.
+통합기는 지정된 기존 실험 보고서 6개와 검색 품질 보고서 2개를 읽습니다.
 
 | 수집 상태 | 의미 |
 |---|---|
@@ -404,6 +403,7 @@ python -m unittest discover -s tests -v
 | test_vector_store.py | 7 | 벡터 순위·권한·인덱스 검사 |
 | test_evaluate_search.py | 5 | 검색 품질 지표 |
 | test_rag_vector.py | 4 | 벡터 RAG 연결 |
+| test_summary_search.py | 3 | 검색 지표·임계값 보존, 잘못된 보고서 처리, 탐색·검증 결과 분리 |
 
 자동 테스트는 가짜 응답과 고정 벡터를 사용합니다.
 실제 Gemini API 호출이나 임베딩 모델 다운로드는 하지 않습니다.
@@ -451,7 +451,6 @@ gh run list --workflow tests.yml --limit 3
 - 모델 파일 리비전과 전체 의존성 고정 미완료
 - 동시 문서 변경·검색에 대한 운영 환경 검증 미완료
 - 벡터 경로에서 전체 공격 회귀 실험 미완료
-- 검색 품질 보고서의 통합 보고서 연결 미완료
 - OWASP GenAI 상세 매핑 및 종합 점수 산식 미구현
 
 ## 데이터 원칙
