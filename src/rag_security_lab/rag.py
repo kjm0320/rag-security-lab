@@ -43,8 +43,13 @@ def build_prompt(query: str, hits: list[dict]) -> str:
         ensure_ascii=False,
     )
 
-
-def generate_answer(prompt: str, api_key: str, model: str) -> str:
+def generate_answer(
+    prompt: str,
+    api_key: str,
+    model: str,
+    *,
+    system_instruction: str = SYSTEM_INSTRUCTION,
+) -> str:
     with genai.Client(
         api_key=api_key,
         http_options=types.HttpOptions(
@@ -56,7 +61,7 @@ def generate_answer(prompt: str, api_key: str, model: str) -> str:
             model=model,
             contents=prompt,
             config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
+                system_instruction=system_instruction,
                 temperature=0,
                 max_output_tokens=512,
                 automatic_function_calling=types.AutomaticFunctionCallingConfig(
@@ -71,6 +76,8 @@ def generate_answer(prompt: str, api_key: str, model: str) -> str:
         raise RuntimeError("모델이 텍스트 답변을 반환하지 않았습니다.")
 
     return answer.strip()
+
+
 
 
 def main() -> None:
