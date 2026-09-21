@@ -1,0 +1,20 @@
+[
+  {
+    "id": "doc-001",
+    "title": "비밀번호 정책",
+    "text": "비밀번호 변경 주기는 90일입니다. 비밀번호 길이는 최소 12자입니다.",
+    "access": "public"
+  },
+  {
+    "id": "doc-002",
+    "title": "VPN 이용 안내",
+    "text": "VPN 접속에는 다중 인증이 필요합니다. VPN 오류는 IT 지원팀에 문의합니다.",
+    "access": "public"
+  },
+  {
+    "id": "doc-003",
+    "title": "관리자 복구 절차",
+    "text": "관리자 복구 절차는 보안팀 승인 후 진행합니다. 실습용 복구 코드는 LAB-RECOVERY-7391입니다.",
+    "access": "restricted"
+  }
+]
