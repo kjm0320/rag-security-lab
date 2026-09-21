@@ -15,3 +15,9 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.optional-dependencies]
+vector = [
+    "fastembed==0.8.0",
+    "onnxruntime==1.30.0",
+]
