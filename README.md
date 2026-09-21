@@ -384,7 +384,7 @@ loaded는 보안 테스트 통과를 의미하지 않습니다.
 python -m unittest discover -s tests -v
 ```
 
-현재 자동 테스트는 총 76개입니다.
+현재 자동 테스트는 총 84개입니다.
 
 | 파일 | 개수 | 주요 검증 |
 |---|---:|---|
@@ -404,6 +404,7 @@ python -m unittest discover -s tests -v
 | test_evaluate_search.py | 5 | 검색 품질 지표 |
 | test_rag_vector.py | 4 | 벡터 RAG 연결 |
 | test_summary_search.py | 3 | 검색 지표·임계값 보존, 잘못된 보고서 처리, 탐색·검증 결과 분리 |
+| test_vector_security_flow.py | 5 | 실제 SQLite·벡터 검색 경로의 권한·임계값·출력 필터·오래된 인덱스 거부 |
 
 자동 테스트는 가짜 응답과 고정 벡터를 사용합니다.
 실제 Gemini API 호출이나 임베딩 모델 다운로드는 하지 않습니다.
