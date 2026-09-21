@@ -8,7 +8,10 @@ version = "0.1.0"
 description = "A security testing platform for LLM and RAG applications"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "google-genai",
+    "python-dotenv",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
