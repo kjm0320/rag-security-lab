@@ -1,4 +1,4 @@
-"""접근 가능한 문서를 검색한 뒤 Gemini로 답변을 생성한다."""
+"""접근 가능한 문서를 검색하고, 생성 답변의 합성 비밀값을 가린다."""
 
 import argparse
 import json
@@ -10,8 +10,12 @@ from google import genai
 from google.genai import errors, types
 
 from rag_security_lab.gateway import secure_search
+from rag_security_lab.output_guard import redact_secrets
 from rag_security_lab.retrieval import load_documents
 
+
+# 합성 데이터 실습 정책: 관리자에게도 이 값은 직접 출력하지 않는다.
+OUTPUT_SECRETS = ["LAB-RECOVERY-7391"]
 
 SYSTEM_INSTRUCTION = """
 너는 실습용 문서 질의응답 도우미다.
@@ -42,6 +46,7 @@ def build_prompt(query: str, hits: list[dict]) -> str:
         },
         ensure_ascii=False,
     )
+
 
 def generate_answer(
     prompt: str,
@@ -76,8 +81,6 @@ def generate_answer(
         raise RuntimeError("모델이 텍스트 답변을 반환하지 않았습니다.")
 
     return answer.strip()
-
-
 
 
 def main() -> None:
@@ -162,8 +165,14 @@ def main() -> None:
             "연결 상태나 모델 응답을 확인해야 합니다."
         ) from None
 
+    # 정상적으로 생성된 모든 답변에 출력 필터를 적용한다.
+    guarded = redact_secrets(answer, OUTPUT_SECRETS)
+
     print("\n[답변]")
-    print(answer)
+    print(guarded.text)
+
+    if guarded.redacted:
+        print("[출력 검사] 보호 대상 값이 가려졌습니다.")
 
 
 if __name__ == "__main__":
