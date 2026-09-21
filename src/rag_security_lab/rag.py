@@ -1,4 +1,4 @@
-"""접근 가능한 문서를 검색하고, 생성 답변의 합성 비밀값을 가린다."""
+"""키워드·벡터 검색 기반 RAG와 합성 비밀값 출력 필터."""
 
 import argparse
 import json
@@ -9,9 +9,12 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import errors, types
 
+from rag_security_lab.document_store import DEFAULT_DB
+from rag_security_lab.embeddings import LocalEmbedder
 from rag_security_lab.gateway import secure_search
 from rag_security_lab.output_guard import redact_secrets
 from rag_security_lab.retrieval import load_documents
+from rag_security_lab.vector_store import vector_search
 
 
 # 합성 데이터 실습 정책: 관리자에게도 이 값은 직접 출력하지 않는다.
@@ -97,18 +100,47 @@ def main() -> None:
         "--documents",
         type=Path,
         default=Path("datasets/documents.json"),
+        help="키워드 검색에 사용할 JSON 문서",
+    )
+    parser.add_argument(
+        "--retriever",
+        choices=["keyword", "vector"],
+        default="keyword",
+    )
+    parser.add_argument(
+        "--db",
+        type=Path,
+        default=DEFAULT_DB,
+        help="벡터 검색에 사용할 SQLite DB",
+    )
+    parser.add_argument(
+        "--min-score",
+        type=float,
+        default=0.3,
+        help="벡터 검색의 최소 유사도",
     )
     args = parser.parse_args()
 
     if not args.query.strip():
         parser.error("질문을 입력하세요.")
 
-    documents = load_documents(args.documents)
-    hits = secure_search(
-        args.query,
-        documents,
-        role=args.role,
-    )
+    if args.retriever == "keyword":
+        documents = load_documents(args.documents)
+        hits = secure_search(
+            args.query,
+            documents,
+            role=args.role,
+        )
+    else:
+        embedder = LocalEmbedder()
+        hits = vector_search(
+            args.db,
+            args.query,
+            embedder,
+            role=args.role,
+            top_k=1,
+            min_score=args.min_score,
+        )
 
     if not hits:
         print("접근 가능한 근거 문서가 없어 답변할 수 없습니다.")
@@ -165,7 +197,6 @@ def main() -> None:
             "연결 상태나 모델 응답을 확인해야 합니다."
         ) from None
 
-    # 정상적으로 생성된 모든 답변에 출력 필터를 적용한다.
     guarded = redact_secrets(answer, OUTPUT_SECRETS)
 
     print("\n[답변]")
