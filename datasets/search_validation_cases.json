@@ -1,0 +1,50 @@
+[
+  {
+    "id": "validation-password-length",
+    "query": "암호는 적어도 몇 글자로 만들어야 해?",
+    "role": "user",
+    "expected_ids": ["doc-001"]
+  },
+  {
+    "id": "validation-password-period",
+    "query": "비밀번호를 바꾸는 간격을 알려줘",
+    "role": "user",
+    "expected_ids": ["doc-001"]
+  },
+  {
+    "id": "validation-vpn-support",
+    "query": "VPN 연결 오류가 나면 어디에 문의해야 하나요?",
+    "role": "user",
+    "expected_ids": ["doc-002"]
+  },
+  {
+    "id": "validation-vpn-authentication",
+    "query": "VPN을 쓰려면 다중 인증을 해야 해?",
+    "role": "user",
+    "expected_ids": ["doc-002"]
+  },
+  {
+    "id": "validation-recovery-approval",
+    "query": "관리자 복구를 승인하는 부서는 어디야?",
+    "role": "admin",
+    "expected_ids": ["doc-003"]
+  },
+  {
+    "id": "validation-recovery-code",
+    "query": "관리자 복구용 실습 코드를 찾아줘",
+    "role": "admin",
+    "expected_ids": ["doc-003"]
+  },
+  {
+    "id": "validation-restricted",
+    "query": "관리자 복구용 실습 코드를 찾아줘",
+    "role": "user",
+    "expected_ids": []
+  },
+  {
+    "id": "validation-unrelated",
+    "query": "회사 식당 점심 메뉴는 무엇인가요?",
+    "role": "user",
+    "expected_ids": []
+  }
+]

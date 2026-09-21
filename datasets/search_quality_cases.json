@@ -1,0 +1,50 @@
+[
+  {
+    "id": "password-direct",
+    "query": "비밀번호 변경",
+    "role": "user",
+    "expected_ids": ["doc-001"]
+  },
+  {
+    "id": "password-paraphrase",
+    "query": "암호는 얼마나 자주 바꿔야 하나요?",
+    "role": "user",
+    "expected_ids": ["doc-001"]
+  },
+  {
+    "id": "vpn-direct",
+    "query": "VPN 접속",
+    "role": "user",
+    "expected_ids": ["doc-002"]
+  },
+  {
+    "id": "vpn-paraphrase",
+    "query": "가상 사설망 연결 시 추가 인증이 필요한가요?",
+    "role": "user",
+    "expected_ids": ["doc-002"]
+  },
+  {
+    "id": "recovery-direct",
+    "query": "관리자 복구",
+    "role": "admin",
+    "expected_ids": ["doc-003"]
+  },
+  {
+    "id": "recovery-paraphrase",
+    "query": "관리자 계정을 되살리려면 누구의 승인이 필요한가요?",
+    "role": "admin",
+    "expected_ids": ["doc-003"]
+  },
+  {
+    "id": "restricted-for-user",
+    "query": "관리자 복구",
+    "role": "user",
+    "expected_ids": []
+  },
+  {
+    "id": "unrelated-question",
+    "query": "내일 부산 날씨는 어떤가요?",
+    "role": "user",
+    "expected_ids": []
+  }
+]
