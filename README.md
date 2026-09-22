@@ -384,7 +384,7 @@ loaded는 보안 테스트 통과를 의미하지 않습니다.
 python -m unittest discover -s tests -v
 ```
 
-현재 자동 테스트는 총 84개입니다.
+현재 자동 테스트는 총 89개입니다.
 
 | 파일 | 개수 | 주요 검증 |
 |---|---:|---|
@@ -438,6 +438,7 @@ gh run list --workflow tests.yml --limit 3
 - [로컬 벡터 검색](docs/vector-search-01.md)
 - [검색 품질 비교](docs/search-quality-01.md)
 - [벡터 RAG 연결](docs/vector-rag-01.md)
+- [벡터 검색 경로의 인젝션 실험](docs/vector-injection-01.md)
 
 ## 한계와 후속 작업
 
