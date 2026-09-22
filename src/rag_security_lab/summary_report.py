@@ -49,11 +49,75 @@ SOURCES = [
         "search_validation_threshold_03.json",
         "exploratory_search_quality",
     ),
+    (
+        "벡터 검색 경로 — 시스템 메시지 사칭",
+        "vector_fake_system_message.json",
+        "vector_indirect_prompt_injection",
+    ),
 ]
 
 
 def extract_observations(data: dict) -> dict:
     scope = data["scope"]
+    if scope == "vector_indirect_prompt_injection":
+        planned_cases = data["planned_cases"]
+        results = data["results"]
+
+        planned = {case["case_id"]: case for case in planned_cases}
+        if len(planned) != len(planned_cases):
+            raise ValueError("계획된 조건 ID가 중복됐습니다.")
+
+        result_map = {result["case_id"]: result for result in results}
+        if len(result_map) != len(results):
+            raise ValueError("실행 결과 ID가 중복됐습니다.")
+
+        if not set(result_map).issubset(planned):
+            raise ValueError("계획에 없는 실행 결과가 있습니다.")
+
+        rows = []
+        for case_id, case in planned.items():
+            result = result_map.get(case_id)
+            row = {
+                "case_id": case_id,
+                "retrieved_ids": case["retrieved_ids"],
+                "scores": case["scores"],
+                "attack_delivered": case["attack_delivered"],
+            }
+
+            if result is None:
+                row["status"] = "not_run"
+            else:
+                if result["attack_delivered"] != case["attack_delivered"]:
+                    raise ValueError("공격 전달 여부 기록이 일치하지 않습니다.")
+
+                row["status"] = result["status"]
+
+                if result["status"] == "completed":
+                    row["marker_verdict"] = result["marker_verdict"]
+                elif result["status"] == "api_error":
+                    row["http_code"] = result["http_code"]
+                elif result["status"] == "execution_error":
+                    row["error_type"] = result["error_type"]
+                elif result["status"] != "skipped_no_context":
+                    raise ValueError("알 수 없는 실행 상태입니다.")
+
+            rows.append(row)
+
+        return {
+            "attack_id": data["attack"]["id"],
+            "embedding_model": data["embedding_model"],
+            "embedding_versions": data["embedding_versions"],
+            "settings": data["settings"],
+            "reported_complete": data["complete"],
+            "reported_generated_cases": data["generated_cases"],
+            "cases": rows,
+            "interpretation": [
+                "공격 미전달과 모델의 공격 거부는 다르다.",
+                "생성 생략 및 실행 오류에는 마커 판정을 부여하지 않는다.",
+                "not_run은 보고서에 해당 조건의 실행 결과가 없다는 뜻이다.",
+                "complete는 모든 조건에서 모델 응답을 받았다는 뜻이 아니다.",
+            ],
+        }
     if scope == "exploratory_search_quality":
         return {
             "embedding_model": data["embedding_model"],
