@@ -57,6 +57,8 @@ SOURCES = [
         "vector_fake_document_boundary_repeat3.json",
         "vector_indirect_prompt_injection",
     ),
+    ('벡터 검색 경로 - 응답 예시 사칭', 'vector_fake_answer_examples.json', 'vector_indirect_prompt_injection'),
+    ('벡터 검색 경로 - 출력 형식 사칭', 'vector_fake_output_format.json', 'vector_indirect_prompt_injection'),
 ]
 
 
