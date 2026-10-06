@@ -6,10 +6,65 @@ import json
 import math
 import sqlite3
 from contextlib import closing
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from rag_security_lab.document_store import DEFAULT_DB, get_documents
 from rag_security_lab.embeddings import DIMENSION, MODEL_NAME, LocalEmbedder
+
+
+
+INDEX_FORMAT_VERSION = 1
+
+
+def embedding_signature(embedder) -> dict:
+    """인덱스 호환성 비교용 설정. 모델 파일 무결성 검사는 아니다."""
+    versions = {}
+    for package in ("fastembed", "onnxruntime"):
+        try:
+            versions[package] = version(package)
+        except PackageNotFoundError:
+            versions[package] = None
+
+    return {
+        "index_format_version": INDEX_FORMAT_VERSION,
+        "model_name": MODEL_NAME,
+        "dimension": DIMENSION,
+        "implementation": (
+            f"{type(embedder).__module__}.{type(embedder).__qualname__}"
+        ),
+        "document_input": "title-newline-text-v1",
+        "normalization": "l2-v1",
+        "package_versions": versions,
+    }
+
+
+def check_index_metadata(connection, embedder):
+    table = connection.execute(
+        "SELECT name FROM sqlite_master "
+        "WHERE type = 'table' AND name = 'vector_index_metadata'"
+    ).fetchone()
+    if table is None:
+        raise ValueError("인덱스 환경 기록이 없습니다. build를 다시 실행하세요.")
+
+    row = connection.execute(
+        "SELECT signature_json FROM vector_index_metadata WHERE id = 1"
+    ).fetchone()
+    if row is None:
+        raise ValueError("인덱스 환경 기록이 없습니다. build를 다시 실행하세요.")
+
+    try:
+        stored = json.loads(row[0])
+    except (ValueError, TypeError) as exc:
+        raise ValueError(
+            "인덱스 환경 기록이 손상됐습니다. build를 다시 실행하세요."
+        ) from exc
+
+    if stored != embedding_signature(embedder):
+        raise ValueError(
+            "인덱스 생성 환경과 현재 환경이 다릅니다. "
+            "build를 다시 실행하세요."
+        )
 
 
 def fingerprint(document: dict) -> str:
@@ -46,6 +101,8 @@ def build_index(db: Path, embedder) -> int:
     if not documents:
         raise ValueError("인덱싱할 문서가 없습니다.")
 
+    signature = embedding_signature(embedder)
+
     texts = [
         f"{document['title']}\n{document['text']}"
         for document in documents
@@ -68,6 +125,7 @@ def build_index(db: Path, embedder) -> int:
 
     with closing(sqlite3.connect(db)) as connection:
         with connection:
+            connection.execute("BEGIN IMMEDIATE")
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS document_vectors (
                     document_id TEXT PRIMARY KEY,
@@ -84,6 +142,19 @@ def build_index(db: Path, embedder) -> int:
                 VALUES (?, ?, ?, ?)
                 """,
                 rows,
+            )
+
+
+            connection.execute("""
+                CREATE TABLE IF NOT EXISTS vector_index_metadata (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    signature_json TEXT NOT NULL
+                )
+            """)
+            connection.execute(
+                "INSERT OR REPLACE INTO vector_index_metadata "
+                "(id, signature_json) VALUES (1, ?)",
+                (json.dumps(signature, ensure_ascii=False, sort_keys=True),),
             )
 
     return len(rows)
@@ -121,6 +192,8 @@ def vector_search(
         ).fetchone()
         if table is None:
             raise ValueError("벡터 인덱스가 없습니다. build를 실행하세요.")
+
+        check_index_metadata(connection, embedder)
 
         for document in documents:
             row = connection.execute(
